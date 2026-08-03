@@ -27,7 +27,11 @@ The workflow is intentionally evidence-first. OCR output is a candidate, not a f
 
 ### Model selection: dated field note
 
-Choose a model according to the current quota, speed, and quality requirements. In the author's personal tests as of 2026-08-03, ChatGPT 5.6 Luna Max offered a good cost-quality tradeoff for a book of about 70,000 Chinese characters; Sol-Medium/High consumed quota quickly, and Terra-High was not recommended in that test. Treat this as a dated personal observation, not an accuracy claim, product guarantee, or universal ranking. Re-benchmark on representative pages whenever model availability, pricing, or quotas change. A stronger model never replaces visual proofreading against the scan.
+Choose a model according to the current quota, speed, and quality requirements. In the author's personal use as of 2026-08-03, ChatGPT 5.6 Luna Max was sufficient for this workflow and, after a substantial price reduction, was very quota-efficient: a book of about 70,000 Chinese characters used less than 10% of a Plus weekly quota and took roughly 1–2 hours. Sol-Medium/High used quota very quickly—about one full weekly quota for a comparable run. Terra-High produced average results while still consuming a nontrivial amount of quota, making it the least recommended option in this experience. Treat these figures as dated personal observations from that setup, not an accuracy claim, product guarantee, or universal benchmark; re-measure after model, price, or quota changes. A stronger model never replaces visual proofreading against the scan.
+
+### Parallel work with subagents
+
+For a long book, you can tell Codex: “If needed, you may call subagents.” This can speed up work that can be split into independent checks or blind transcriptions. Keep the skill's privacy and evidence safeguards, and keep the main agent as the sole writer of source files and final decisions.
 
 ### Install from GitHub
 
@@ -42,7 +46,7 @@ After installation, start a new Codex turn. Restart Codex only if the skill does
 
 This repository contains workflow instructions only. Do not commit private scans, complete OCR, book-specific cover images, copyright pages, or unlicensed EPUB samples. Use synthetic, public-domain, or explicitly redistributable fixtures for tests.
 
-The skills are macOS-first when Apple Vision is requested. On other platforms, the agent must state that the Apple Vision backend is unavailable rather than silently claiming a dual-engine run.
+The skills are macOS-first when Apple Vision is requested. The author's reference run used a MacBook Air with an M5 chip and Apple's local OCR through Apple Vision. On other platforms, the agent must state that the Apple Vision backend is unavailable rather than silently claiming a dual-engine run.
 
 ### Repository layout
 
@@ -85,7 +89,11 @@ This is a first public release extracted from a real local workflow. The project
 
 ### 模型选择：带日期的经验记录
 
-可以根据当期额度、速度和质量要求选择模型。截至 2026-08-03，作者个人实测中，ChatGPT 5.6 Luna Max 对约 7 万中文字的一本书性价比较高；Sol-Medium/High 消耗较快，Terra-High 在该次测试中不推荐。请把这当作带日期的个人观察，不要理解为准确率结论、产品保证或普遍排名；模型可用性、价格和额度变化后，应使用代表性页面重新测试。无论选择哪个模型，都不能替代对照扫描件的高清视觉校对。
+可以根据当期额度、速度和质量要求选择模型。截至 2026-08-03，作者个人使用发现，ChatGPT 5.6 Luna Max 已经能够满足这套工作流的需求；大幅降价后也非常耐用：制作一本约 7 万中文字的书，消耗不到 10% 的 Plus 周额度，耗时大约 1–2 小时。Sol-Medium/High 会非常快地消耗额度，类似任务差不多会用掉一整个周额度。Terra-High 的效果一般，额度消耗也不低，是这次经验中最不推荐的选项。请把这些数字和判断理解为该环境下带日期的个人观察，不要理解为准确率结论、产品保证或普遍基准；模型、价格或额度变化后应重新测量。无论选择哪个模型，都不能替代对照扫描件的高清视觉校对。
+
+### 使用 subagent 加速
+
+处理较长的书时，可以直接对 Codex 说：“如有需要可以调用 subagent”。对于能够拆分成独立检查或盲录任务的工作，subagent 可以帮助并行处理、缩短耗时。仍需遵守本 Skill 的隐私和证据边界，并让主 agent 作为源文件修改者和最终裁决者。
 
 ### 从 GitHub 安装
 
@@ -100,7 +108,7 @@ This is a first public release extracted from a real local workflow. The project
 
 本仓库只包含工作流说明，不包含项目原始素材。请勿提交私人扫描件、完整 OCR、特定书籍的封面图、版权页或未经授权的 EPUB 样例。测试时请使用合成材料、公版材料或明确允许再分发的样例。
 
-当任务选择 Apple Vision 时，这套 Skill 以 macOS 为主要平台。在其他平台上，代理必须明确说明 Apple Vision 后端不可用，不应含糊地声称完成了双引擎流程。
+当任务选择 Apple Vision 时，这套 Skill 以 macOS 为主要平台。作者的参考实践使用 MacBook Air M5，并通过 Apple Vision 使用苹果的本地 OCR。在其他平台上，代理必须明确说明 Apple Vision 后端不可用，不应含糊地声称完成了双引擎流程。
 
 ### 仓库结构
 
