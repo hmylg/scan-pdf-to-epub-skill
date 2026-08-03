@@ -1,0 +1,12 @@
+.DS_Store
+*.pdf
+*.epub
+work/
+output/
+tmp/
+build/
+*.log
+__pycache__/
+.venv/
+venv/
+
