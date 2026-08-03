@@ -1,0 +1,6 @@
+Unless otherwise noted, the original workflow documentation and skill instructions in this repository are licensed under the Creative Commons Attribution 4.0 International license (CC BY 4.0).
+
+License text:
+https://creativecommons.org/licenses/by/4.0/
+
+Attribution should credit this repository and link to the original source.
