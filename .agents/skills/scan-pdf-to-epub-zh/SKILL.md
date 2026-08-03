@@ -15,6 +15,7 @@ description: 将扫描版或图片型 PDF 制作成可追溯、可搜索、可�
 - 在独立项目目录中工作，至少维护 src/、work/、tools/、逐页 book-manifest.json 和人工可读的 QA 报告。
 - 保留原始 OCR JSON、候选文本、精校逐页文本、图片来源和修复记录。
 - 保留封面、书名页、版权页、插图、二维码、标志、空白页和纸书页码锚点。
+- 说明可重排 EPUB 保留的是可搜索正文和图片，不是 PDF 在所有字号和屏幕宽度下的精确页面布局。
 - 不翻译、不润色、不顺语义、不根据上下文补写扫描中没有的文字。
 - 不把 OCR 置信度、模型相似度或语言模型的通顺程度当作字符准确率。
 - 改动原 PDF、上传内容、公开版权页或替用户裁决重要歧义前必须暂停确认。
@@ -126,6 +127,6 @@ description: 将扫描版或图片型 PDF 制作成可追溯、可搜索、可�
 
 ## 参考资料路由
 
-- 详细阶段产物和恢复规则：阅读 workflow.md。
-- 交付或审计 QA 报告：阅读 qa-checklist.md。
-- 涉及 Apple Books、微信读书或其他阅读器：阅读 reader-compatibility.md。
+- 详细阶段产物和恢复规则：阅读 [workflow.md](references/workflow.md)。
+- 交付或审计 QA 报告：阅读 [qa-checklist.md](references/qa-checklist.md)。
+- 涉及 Apple Books、微信读书或其他阅读器：阅读 [reader-compatibility.md](references/reader-compatibility.md)。
