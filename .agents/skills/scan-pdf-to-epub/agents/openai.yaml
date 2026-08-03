@@ -1,0 +1,4 @@
+interface:
+  display_name: "Scan PDF to Reflowable EPUB"
+  short_description: "Convert scanned PDFs into verified reflowable EPUBs"
+  default_prompt: "Use $scan-pdf-to-epub to turn this scanned PDF into a verified reflowable EPUB."
