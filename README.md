@@ -25,6 +25,10 @@ Use these skills for:
 
 The workflow is intentionally evidence-first. OCR output is a candidate, not a finished transcription. The final text must be checked against the high-resolution scan.
 
+### Model selection: dated field note
+
+Choose a model according to the current quota, speed, and quality requirements. In the author's personal tests as of 2026-08-03, ChatGPT 5.6 Luna Max offered a good cost-quality tradeoff for a book of about 70,000 Chinese characters; Sol-Medium/High consumed quota quickly, and Terra-High was not recommended in that test. Treat this as a dated personal observation, not an accuracy claim, product guarantee, or universal ranking. Re-benchmark on representative pages whenever model availability, pricing, or quotas change. A stronger model never replaces visual proofreading against the scan.
+
 ### Install from GitHub
 
 Use the Codex skill installer with one of these directories:
@@ -78,6 +82,10 @@ This is a first public release extracted from a real local workflow. The project
 - 对已有 PDF→EPUB 项目进行增量修复和质量审计。
 
 本工作流以证据为先：OCR 只是候选结果，不是最终录入文本；最终文字必须对照高清扫描件逐页核校。
+
+### 模型选择：带日期的经验记录
+
+可以根据当期额度、速度和质量要求选择模型。截至 2026-08-03，作者个人实测中，ChatGPT 5.6 Luna Max 对约 7 万中文字的一本书性价比较高；Sol-Medium/High 消耗较快，Terra-High 在该次测试中不推荐。请把这当作带日期的个人观察，不要理解为准确率结论、产品保证或普遍排名；模型可用性、价格和额度变化后，应使用代表性页面重新测试。无论选择哪个模型，都不能替代对照扫描件的高清视觉校对。
 
 ### 从 GitHub 安装
 
