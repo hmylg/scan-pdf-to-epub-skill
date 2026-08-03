@@ -1,0 +1,4 @@
+interface:
+  display_name: "扫描 PDF 转可重排 EPUB（中文）"
+  short_description: "中文扫描 PDF 转可重排 EPUB 的完整制作与质量验收流程"
+  default_prompt: "Use $scan-pdf-to-epub-zh to turn this scanned PDF into a verified reflowable EPUB."
