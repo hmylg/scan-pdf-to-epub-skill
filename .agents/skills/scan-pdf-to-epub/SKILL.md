@@ -15,6 +15,7 @@ Turn a scanned or image-based PDF into a searchable, resizable EPUB while keepin
 - Work in a separate project directory with src/, work/, tools/, a page-level book-manifest.json, and a human-readable QA report.
 - Keep raw OCR JSON, candidate text, final page text, image provenance, and repair notes.
 - Preserve covers, title pages, copyright pages, illustrations, QR codes, logos, blank pages, and paper-page anchors.
+- Explain that a reflowable EPUB preserves searchable content and images, not the PDF's exact page layout at every width and font size.
 - Do not translate, paraphrase, smooth, restore, or invent text that is not supported by the scan.
 - Do not treat OCR confidence, model similarity, or language-model fluency as character accuracy.
 - Pause before changing the source, uploading content, exposing copyrighted pages, or resolving an ambiguity that requires the owner’s decision.
@@ -126,6 +127,6 @@ Ordinary implementation steps—creating directories, caching intermediate files
 
 ## Reference routing
 
-- Read workflow.md for detailed phase outputs and recovery rules.
-- Read qa-checklist.md before delivery or when auditing an existing QA report.
-- Read reader-compatibility.md when Apple Books, WeChat Reading, or another reader is in scope.
+- Read [workflow.md](references/workflow.md) for detailed phase outputs and recovery rules.
+- Read [qa-checklist.md](references/qa-checklist.md) before delivery or when auditing an existing QA report.
+- Read [reader-compatibility.md](references/reader-compatibility.md) when Apple Books, WeChat Reading, or another reader is in scope.
