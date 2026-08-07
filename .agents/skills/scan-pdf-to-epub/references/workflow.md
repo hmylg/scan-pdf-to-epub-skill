@@ -21,7 +21,7 @@ Use this reference when executing a new conversion or recovering an interrupted 
 | Preflight | Source record, hash, page count, platform and user decisions | Metadata or privacy scope is unclear |
 | Inventory | Contact sheet, spread/single classification, special-page list | A page cannot be classified safely |
 | Manifest | Stable page IDs, crop boxes, states and provenance | Any source page has no planned disposition |
-| OCR acquisition | Route A: same-image local raw JSON; Route B: mapped AI Studio exports and a visual risk sample | Neither approved route is available |
+| OCR acquisition | Route A: local PP-OCRv6 medium plus Apple Vision on macOS; Route B: mapped AI Studio exports plus Apple Vision on macOS; optional alternate backend offered on non-macOS | Neither route’s PaddleOCR candidate is available |
 | Full OCR | Cached candidates and resumable logs | A batch would overwrite prior raw output |
 | Proofing | Frozen final-pages, visual decisions and repair log | Text is chosen only by confidence or fluency |
 | EPUB build | Generated source tree, EPUB package and build log | Final pages or image placement are still changing |
@@ -44,8 +44,8 @@ Never place a private source path or a cloud credential in a public report.
 
 Choose exactly one route before full processing:
 
-- **Route A — local comparison:** Require PaddleOCR 3.7 or newer and use `PP-OCRv6_medium_det` plus `PP-OCRv6_medium_rec`. Compare it with Apple Vision on macOS. Do not silently replace PaddleOCR with Apple Vision or Tesseract.
-- **Route B — user-supplied AI Studio:** When the user supplied official PaddleOCR AI Studio `.md` and `.json` exports before processing, record their provenance, hashes, export metadata when available, and complete page mapping. Use them directly as the primary candidate. Once the exports and mapping are usable, proceed without installing local PaddleOCR, requiring a second engine, or pausing to ask for one unless the user explicitly requests an additional comparison.
+- **Route A — local PP-OCRv6 medium:** Require PaddleOCR 3.7 or newer and use `PP-OCRv6_medium_det` plus `PP-OCRv6_medium_rec`. Compare it with Apple Vision on macOS. On non-macOS, complete the PP-OCRv6 medium candidate, disclose that Apple Vision is unavailable, then ask whether to add another available OCR backend. Continue with visual proofing if the user declines.
+- **Route B — user-supplied AI Studio:** When the user supplied official PaddleOCR AI Studio `.md` and `.json` exports before processing, record their provenance, hashes, export metadata when available, and complete page mapping. Use them directly as the PaddleOCR candidate without installing local PaddleOCR. Compare them with Apple Vision on macOS. On non-macOS, disclose that Apple Vision is unavailable, then ask whether to add another available OCR backend; continue with visual proofing if the user declines.
 
 Before full processing, create `work/ocr/engine-preflight.json` and record the selected route. For every available engine or external export, record source, package/version when applicable, model when known, language, device, options, input count and hash policy, cache/download status, run status, output path, failure reason, and timestamps. A Chinese task is not ready when neither route is available. Missing local PaddleOCR raw JSON is acceptable only on Route B with recorded `.md`/`.json` paths, provenance, hashes, and page mapping.
 
@@ -63,7 +63,7 @@ Recommended state transitions:
 2. classified
 3. extracted
 4. ocr-complete
-5. candidate-compared, or primary-candidate-recorded when Route B has no second engine
+5. candidate-compared, or primary-candidate-recorded when a non-macOS user declines another OCR backend
 6. proofed
 7. illustration-ready or confirmed-blank
 8. epub-placed
@@ -85,11 +85,11 @@ Re-run OCR only for pages whose crop or image hash changed. Keep prior candidate
 
 ## OCR and candidate routing
 
-On Route A, run the same crop through each local engine after preflight. Record engine name, package/model version, options, image hash, runtime date, and raw result path. Make engine upgrades visible in the manifest.
+On Route A, run PP-OCRv6 medium after preflight and run Apple Vision on the same crop on macOS. On non-macOS, ask about another available OCR backend only after the PP-OCRv6 medium candidate exists. Record engine name, package/model version, options, image hash, runtime date, and raw result path. Make engine upgrades visible in the manifest.
 
-On Route B, preserve the supplied `.md` and `.json` unchanged, map them to source pages, and record any unknown online preprocessing. Do not manufacture same-image comparability, run a local engine solely to satisfy a dual-engine checkbox, or delay visual proofing to seek a second engine.
+On Route B, preserve the supplied `.md` and `.json` unchanged, map them to source pages, and record any unknown online preprocessing. On macOS, run Apple Vision on the mapped source pages for comparison. On non-macOS, ask whether to add another available OCR backend. Do not manufacture same-image comparability or run local PaddleOCR merely to duplicate AI Studio.
 
-Use a risk set that covers layout risk, not just easy prose. On Route A it supports candidate routing and regression. On Route B it drives high-resolution visual proofing of the supplied primary candidate. It is not a formal accuracy certificate unless an independent valid gold standard exists.
+Use a risk set that covers layout risk, not just easy prose. With two candidates it supports candidate routing and regression; with one accepted candidate it drives high-resolution visual proofing. It is not a formal accuracy certificate unless an independent valid gold standard exists.
 
 After candidate comparison, or after Route B risk sampling:
 

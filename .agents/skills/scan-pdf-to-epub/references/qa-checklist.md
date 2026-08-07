@@ -11,6 +11,7 @@ Attach evidence to the project QA report. A checkbox without a path, command out
 - [ ] Host OS and architecture recorded; Apple Vision availability checked when required.
 - [ ] OCR engines, packages, models, options and offline status recorded.
 - [ ] The selected OCR route is explicit: Route A uses PaddleOCR 3.7+ with PP-OCRv6 medium det/rec; Route B maps approved user-provided AI Studio `.md`/`.json` exports to the source pages.
+- [ ] On macOS, Apple Vision was paired with the route’s PaddleOCR candidate; on non-macOS, its unavailability was disclosed and the user was asked whether to add another available OCR backend after the PaddleOCR candidate was ready.
 - [ ] `work/ocr/engine-preflight.json` records cache, download, run status and failure reasons.
 - [ ] If Route A ran, only one PaddleOCR pipeline instance was used, its cache was reused, and subagents did not start another OCR runner; Route B did not install or run local PaddleOCR merely for duplication.
 - [ ] Existing project assets and prior QA audited before reprocessing.
@@ -31,8 +32,8 @@ Attach evidence to the project QA report. A checkbox without a path, command out
 - [ ] Raw JSON was saved for every completed engine/page pair.
 - [ ] Candidate text preserves page IDs and reading order.
 - [ ] Any AI Studio result is recorded as an external online source with its `.md`/`.json` provenance; if selected, its direct use as the primary candidate is explicit, never mislabeled as local OCR.
-- [ ] Route B proceeded without requiring or requesting a second OCR engine unless the user explicitly asked for an additional comparison.
-- [ ] Route A difference routing, or Route B visual risk sampling, covers missing lines, duplicates, order errors and punctuation/number risks.
+- [ ] If a non-macOS user declined another OCR backend, that decision was recorded and processing continued with scan-based visual proofing.
+- [ ] Candidate difference routing, or accepted single-candidate visual risk sampling, covers missing lines, duplicates, order errors and punctuation/number risks.
 - [ ] Risk pages were opened against the high-resolution scan.
 - [ ] Names, titles, mixed scripts, quotations, ellipses, dashes, numbers, URLs and ISBNs were checked.
 - [ ] Cross-page paragraphs, dialogue, gutter edges and illustration neighbors were checked.

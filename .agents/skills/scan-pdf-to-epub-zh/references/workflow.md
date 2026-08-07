@@ -21,7 +21,7 @@
 | 前置检查 | 来源记录、哈希、页数、平台和用户决定 | 元数据或隐私范围不清 |
 | 页面清点 | 缩略图、单页/双页分类、特殊页清单 | 页面无法安全分类 |
 | Manifest | 稳定 page ID、裁切框、状态和来源 | 某个原页没有去向 |
-| OCR 获取 | 路线 A：同图像本地原始 JSON；路线 B：已映射的 AI Studio 导出与视觉风险样本 | 两条获准路线都不可用 |
+| OCR 获取 | 路线 A：本地 PP-OCRv6 medium，macOS 加 Apple Vision；路线 B：已映射的 AI Studio 导出，macOS 加 Apple Vision；非 macOS 询问可选替代后端 | 两条路线的 PaddleOCR 候选都不可用 |
 | 全文 OCR | 候选结果缓存和可恢复日志 | 批处理会覆盖原始输出 |
 | 精校 | 冻结的 final-pages、视觉决定和修复日志 | 只凭置信度或通顺度选字 |
 | EPUB 构建 | 可生成源目录、EPUB 和构建日志 | 正文或图片位置仍在变化 |
@@ -44,8 +44,8 @@
 
 全文处理前必须选择一条路线：
 
-- **路线 A——本地对照：**要求 PaddleOCR 3.7 或更高版本，使用 `PP-OCRv6_medium_det` 加 `PP-OCRv6_medium_rec`，并在 macOS 上与 Apple Vision 对照。不能静默用 Apple Vision 或 Tesseract 替代 PaddleOCR。
-- **路线 B——用户已提供 AI Studio 结果：**用户在处理前已经提供官方 PaddleOCR AI Studio 的 `.md` 和 `.json` 时，记录来源、哈希、可取得的导出元数据和完整页面对应关系，并直接作为主候选使用。导出和映射可用后直接继续，不安装本地 PaddleOCR，不要求第二引擎；除非用户明确要求额外对照，否则也不为询问第二引擎而暂停。
+- **路线 A——本地 PP-OCRv6 medium：**要求 PaddleOCR 3.7 或更高版本，使用 `PP-OCRv6_medium_det` 加 `PP-OCRv6_medium_rec`。在 macOS 上与 Apple Vision 对照；在非 macOS 上先完成 PP-OCRv6 medium 候选，说明 Apple Vision 不可用，再询问是否增加另一个当前可用的 OCR 后端。用户拒绝时继续视觉精校。
+- **路线 B——用户已提供 AI Studio 结果：**用户在处理前已经提供官方 PaddleOCR AI Studio 的 `.md` 和 `.json` 时，记录来源、哈希、可取得的导出元数据和完整页面对应关系，直接作为 PaddleOCR 候选，不安装本地 PaddleOCR。在 macOS 上与 Apple Vision 对照；在非 macOS 上说明 Apple Vision 不可用，再询问是否增加另一个当前可用的 OCR 后端。用户拒绝时继续视觉精校。
 
 全文处理前建立 `work/ocr/engine-preflight.json` 并记录所选路线。为每个可用引擎或外部导出记录来源、适用时的包/版本、已知模型、语言、设备、选项、输入页数与哈希规则、缓存/下载状态、运行状态、输出路径、失败原因和起止时间。两条路线都不可用时不能继续。缺少本地 PaddleOCR 原始 JSON 只有在路线 B 已记录 `.md`/`.json` 路径、来源、哈希和页面对应关系时才可以接受。
 
@@ -63,7 +63,7 @@
 2. classified
 3. extracted
 4. ocr-complete
-5. candidate-compared；路线 B 没有第二引擎时使用 primary-candidate-recorded
+5. candidate-compared；非 macOS 用户拒绝增加 OCR 后端时使用 primary-candidate-recorded
 6. proofed
 7. illustration-ready 或 confirmed-blank
 8. epub-placed
@@ -85,11 +85,11 @@
 
 ## OCR 和候选路由
 
-路线 A 完成前置检查后，把同一裁片交给每个本地引擎，记录引擎名称、包/模型版本、选项、图片哈希、运行日期和原始结果路径。引擎升级必须在 manifest 中可见。
+路线 A 完成前置检查后运行 PP-OCRv6 medium；在 macOS 上，把同一裁片交给 Apple Vision。在非 macOS 上，只有取得 PP-OCRv6 medium 候选后才询问是否增加另一个当前可用的 OCR 后端。记录引擎名称、包/模型版本、选项、图片哈希、运行日期和原始结果路径。引擎升级必须在 manifest 中可见。
 
-路线 B 保持用户提供的 `.md` 和 `.json` 不变，将它们映射到源页，并记录未知的在线预处理。不要伪造同图像可比性，不要只为满足“双引擎”勾选项而运行本地引擎，也不要为了寻找第二引擎而延迟视觉精校。
+路线 B 保持用户提供的 `.md` 和 `.json` 不变，将它们映射到源页，并记录未知的在线预处理。在 macOS 上，对映射后的源页运行 Apple Vision 进行对照；在非 macOS 上，询问是否增加另一个当前可用的 OCR 后端。不要伪造同图像可比性，也不要运行本地 PaddleOCR 来重复 AI Studio 结果。
 
-风险样本应覆盖版式问题，而不只是容易识别的正文。路线 A 用于候选路由和回归；路线 B 用于对主候选进行高清视觉精校。除非有独立有效金标准，否则不能称为正式准确率认证。
+风险样本应覆盖版式问题，而不只是容易识别的正文。有两个候选时用于候选路由和回归；用户接受单候选时用于高清视觉精校。除非有独立有效金标准，否则不能称为正式准确率认证。
 
 候选比较后，或路线 B 风险抽检后：
 
