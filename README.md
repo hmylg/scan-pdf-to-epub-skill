@@ -29,6 +29,12 @@ The workflow is intentionally evidence-first. OCR output is a candidate, not a f
 
 Choose a model according to the current quota, speed, and quality requirements. In the author's personal use as of 2026-08-03, ChatGPT 5.6 Luna Max was sufficient for this workflow and, after a substantial price reduction, was very quota-efficient: a book of about 70,000 Chinese characters used less than 10% of a Plus weekly quota and took roughly 1–2 hours. Sol-Medium/High used quota very quickly—about one full weekly quota for a comparable run. Terra-High produced average results while still consuming a nontrivial amount of quota, making it the least recommended option in this experience. Treat these figures as dated personal observations from that setup, not an accuracy claim, product guarantee, or universal benchmark; re-measure after model, price, or quota changes. A stronger model never replaces visual proofreading against the scan.
 
+### PaddleOCR baseline and optional online analysis
+
+PaddleOCR is a first-class and important engine in this skill, not an optional afterthought. For Chinese scan tasks, the skill installs and uses local PP-OCRv6 medium detection and recognition (`PP-OCRv6_medium_det` + `PP-OCRv6_medium_rec`) by default. If the user has already supplied official PaddleOCR AI Studio `.md` and `.json` results for the source, Codex may use them directly as the primary OCR candidate and skip local installation for that task. The [current official model table](https://github.com/PaddlePaddle/PaddleOCR/blob/main/docs/version3.x/pipeline_usage/OCR.en.md) lists 59.4 MB plus 73.3 MB for the two local weights, about 0.13 GB combined; the reference Mac's current model cache is about 133 MB. Reserve about 1 GB of disk for the Python environment, runtime files, and cache. Runtime RAM is separate and varies with image size, batch size, and process count, so this Skill uses one OCR pipeline instance and forbids duplicate model loads.
+
+For non-sensitive PDFs only, you may upload the file to the [official PaddleOCR AI Studio](https://aistudio.baidu.com/paddleocr), use its official online flagship analysis, download the resulting `.md` and `.json`, and tell Codex their paths. If you provide those results before OCR begins, Codex may use them directly as the primary candidate, so local installation is not required for that task. Record the external provenance and page mapping. Do not upload private, confidential, or unauthorized material, and do not describe an online result as a local PaddleOCR run.
+
 ### Parallel work with subagents
 
 For a long book, you can tell Codex: “If needed, you may call subagents.” This can speed up work that can be split into independent checks or blind transcriptions. Keep the skill's privacy and evidence safeguards, and keep the main agent as the sole writer of source files and final decisions.
@@ -90,6 +96,12 @@ This is a first public release extracted from a real local workflow. The project
 ### 模型选择：带日期的经验记录
 
 可以根据当期额度、速度和质量要求选择模型。截至 2026-08-03，作者个人使用发现，ChatGPT 5.6 Luna Max 已经能够满足这套工作流的需求；大幅降价后也非常耐用：制作一本约 7 万中文字的书，消耗不到 10% 的 Plus 周额度，耗时大约 1–2 小时。Sol-Medium/High 会非常快地消耗额度，类似任务差不多会用掉一整个周额度。Terra-High 的效果一般，额度消耗也不低，是这次经验中最不推荐的选项。请把这些数字和判断理解为该环境下带日期的个人观察，不要理解为准确率结论、产品保证或普遍基准；模型、价格或额度变化后应重新测量。无论选择哪个模型，都不能替代对照扫描件的高清视觉校对。
+
+### PaddleOCR 基线与可选在线分析
+
+PaddleOCR 是本 Skill 非常重要的一等引擎，不是可有可无的补充。处理中文扫描 PDF 时，本 Skill 默认在本地安装并使用 PP-OCRv6 medium 检测与识别（`PP-OCRv6_medium_det` + `PP-OCRv6_medium_rec`）。如果用户已经提前提供该来源的官方 PaddleOCR AI Studio `.md` 和 `.json` 结果，Codex 可以直接把它们作为主 OCR 候选使用，本次任务不必安装本地 PaddleOCR。[当前官方模型表](https://github.com/PaddlePaddle/PaddleOCR/blob/main/docs/version3.x/pipeline_usage/OCR.en.md)列出的两个本地模型文件分别约为 59.4 MB 和 73.3 MB，合计约 0.13 GB；参考 Mac 当前的模型缓存约为 133 MB。建议为 Python 环境、运行文件和缓存预留约 1 GB 磁盘空间。运行时内存另行计算，会受图片尺寸、batch 大小和进程数影响，因此本 Skill 只使用一个 OCR pipeline 实例，禁止重复加载模型。
+
+对于不敏感的 PDF，可以上传到[官方 PaddleOCR AI Studio](https://aistudio.baidu.com/paddleocr)，调用官方在线旗舰分析，下载生成的 `.md` 和 `.json` 后把路径告诉 Codex。如果在 OCR 开始前已经提供这些结果，Codex 可以直接把它们作为本次任务的主 OCR 候选使用，因此不必强行安装本地 PaddleOCR。仍需记录外部来源和页面对应关系。不要上传私人、机密或未经授权的内容，也不要把在线结果描述成本地 PaddleOCR 运行结果。
 
 ### 使用 subagent 加速
 
