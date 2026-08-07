@@ -2,6 +2,18 @@
 
 Use this reference when executing a new conversion or recovering an interrupted project.
 
+## Contents
+
+- [Phase outputs](#phase-outputs)
+- [Preflight record](#preflight-record)
+- [Mandatory PaddleOCR preflight for Chinese scans](#mandatory-paddleocr-preflight-for-chinese-scans)
+- [Manifest design](#manifest-design)
+- [Spread splitting](#spread-splitting)
+- [OCR and candidate routing](#ocr-and-candidate-routing)
+- [Proofing record](#proofing-record)
+- [Build and recovery](#build-and-recovery)
+- [Privacy and publication](#privacy-and-publication)
+
 ## Phase outputs
 
 | Phase | Required output | Stop condition |
@@ -27,6 +39,16 @@ Keep a machine-readable source record containing:
 - Host OS, architecture, local OCR versions, model versions and network/offline status.
 
 Never place a private source path or a cloud credential in a public report.
+
+## Mandatory PaddleOCR preflight for Chinese scans
+
+For a Chinese scanned or image-based PDF, prefer local PaddleOCR as the baseline. Use `PP-OCRv6_medium_det` plus `PP-OCRv6_medium_rec` on the local route; do not silently replace it with Apple Vision or Tesseract. If the user has supplied official PaddleOCR AI Studio `.md` and `.json` results before OCR begins, record their provenance and page mapping and use them directly as the primary candidate; local PaddleOCR need not be installed for that task.
+
+Before full OCR, create `work/ocr/engine-preflight.json` and record each engine's package/version, model, language, device, options, input count and hash policy, cache/download status, run status, output path, failure reason, and timestamps. A Chinese task is not ready for full OCR when neither local PaddleOCR nor an approved user-provided AI Studio result is available. Missing local PaddleOCR raw JSON is acceptable only when the approved online route has recorded `.md`/`.json` paths, provenance, and page mapping.
+
+Use one project-managed PaddleOCR environment and one pipeline instance per task. Reuse the model cache, keep batch/worker counts bounded, and do not let subagents or parallel branches initialize duplicate model copies. Unless a benchmark or user requires them, disable document orientation classification, document unwarping, and text-line orientation so the baseline stays on PP-OCRv6 medium det/rec.
+
+For non-sensitive PDFs, the user may run the [official PaddleOCR AI Studio](https://aistudio.baidu.com/paddleocr), download its `.md` and `.json`, and provide the paths to Codex. When supplied before OCR, this approved external result may be used directly as the primary candidate, so local installation can be skipped for that task. Record provenance and page mapping; never upload private, confidential, or unauthorized material, and never label this external result as a local PaddleOCR run.
 
 ## Manifest design
 
@@ -60,7 +82,7 @@ Re-run OCR only for pages whose crop or image hash changed. Keep prior candidate
 
 ## OCR and candidate routing
 
-Run the same crop through each local engine. Record engine name, package/model version, options, image hash, runtime date, and raw result path. Make engine upgrades visible in the manifest.
+Run the same crop through each local engine after the required preflight. Record engine name, package/model version, options, image hash, runtime date, and raw result path. Make engine upgrades visible in the manifest.
 
 Use a benchmark set that covers layout risk, not just easy prose. The benchmark is for routing and regression; it is not a formal accuracy certificate unless an independent valid gold standard exists.
 
@@ -95,4 +117,3 @@ A generated EPUB is not the source of truth. The source tree must be sufficient 
 ## Privacy and publication
 
 Keep private scans, complete OCR, cover images, copyright pages, and book-specific transcripts outside a public repository unless the user has rights and explicitly approves publication. Public fixtures should be synthetic, public-domain, or licensed for redistribution.
-
