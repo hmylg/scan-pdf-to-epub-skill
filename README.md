@@ -79,7 +79,7 @@ This is a first public release extracted from a real local workflow. The project
 - [英文 Skill](.agents/skills/scan-pdf-to-epub/)
 - [中文 Skill](.agents/skills/scan-pdf-to-epub-zh/)
 
-英文 Skill 是默认的全球用户入口；中文 Skill 使用同一套工作流和安全边界，但提供中文说明与中文默认提示词。
+英文 Skill 面向国际用户；中文 Skill 使用同一套工作流和安全边界，但提供中文说明与中文默认提示词。
 
 ### 适用场景
 
