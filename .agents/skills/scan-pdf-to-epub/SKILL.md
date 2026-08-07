@@ -62,9 +62,15 @@ Use the same page image, resolution, crop, and page ID for every engine. Preserv
 
 On macOS, use Apple Vision with the project’s declared languages and options, commonly zh-Hans, en-US, ja-JP, accurate recognition, and language correction. If the required local framework or permission is unavailable, report the limitation and stop or use an explicitly approved fallback.
 
-Use a separately managed local PaddleOCR environment when selected. Record package versions, model configuration, cache/download status, and offline behavior. Do not commit virtual environments or model weights.
+For a Chinese scanned or image-based PDF, prefer local PaddleOCR as the baseline and do not treat Apple Vision plus Tesseract as an equivalent substitute. Use PP-OCRv6 medium detection and recognition (`PP-OCRv6_medium_det` + `PP-OCRv6_medium_rec`) on the local route. If the user has already provided official PaddleOCR AI Studio `.md` and `.json` results for this source, record their provenance and page mapping, then use those results directly as the primary OCR candidate; do not force a second local installation or run. PaddleOCR-VL, user-supplied online OCR, or another engine must be named by its actual source.
 
-Run a representative benchmark before the full book. Include ordinary prose, dialogue, chapter headings, low-contrast or gutter pages, mixed Chinese/Japanese/English/numeric pages, and illustration-adjacent pages. Select a primary candidate only after comparing actual layout and error patterns for this book; never hard-code a universal winner.
+Before full-book OCR, create `work/ocr/engine-preflight.json` and record for every engine: package/version, model, language, device, options, input count and hash policy, cache/download status, run status, output path, failure reason, and timestamps. If neither local PaddleOCR nor an approved user-provided AI Studio result is available, pause before full OCR and report the concrete blocker. Empty PaddleOCR paths or missing raw JSON are a failed local preflight; they are acceptable only when the approved AI Studio route is recorded with its `.md`/`.json` paths, provenance, and page mapping.
+
+For the default PP-OCRv6 medium baseline, avoid downloading unrelated pipelines unless required: keep document-orientation classification, document unwarping, and text-line orientation disabled unless the benchmark or user requires them. Use one project-managed PaddleOCR environment and one OCR pipeline instance per task; reuse its model cache, do not download or initialize duplicate copies, and keep batch/worker counts bounded so memory use remains predictable. Subagents may review pages or transcribe blind samples, but must not each launch another PaddleOCR runner.
+
+Run a representative benchmark before the full book, using the same images, resolution, crops, and page IDs across engines. Include ordinary prose, dialogue, chapter headings, low-contrast or gutter pages, mixed Chinese/Japanese/English/numeric pages, copyright/metadata pages, and illustration-adjacent pages. Select a primary candidate only after comparing actual layout and error patterns for this book; never hard-code a universal winner.
+
+For a non-sensitive PDF, the user may upload it to the [official PaddleOCR AI Studio](https://aistudio.baidu.com/paddleocr), run its online flagship analysis, download the resulting `.md` and `.json`, and provide their paths to Codex. If those results are supplied before OCR, they may be used directly as the primary candidate and local PaddleOCR installation can be skipped for that task. Record the external provenance and page mapping, do not upload private, confidential, or unauthorized material, and do not call an online result a local PaddleOCR run.
 
 ### 4. Route differences to visual proofing
 
@@ -78,7 +84,7 @@ Use a complete scan plus searchable transcription for special pages. Keep decora
 
 ### 5. Coordinate subagents without contaminating evidence
 
-Use subagents only when helpful and only after the user permits parallel work. Suitable assignments are blind transcription from scan images, independent risk-page review, spread-split inspection, and QA-result review.
+Use subagents only when helpful and only after the user permits parallel work. Suitable assignments are blind transcription from scan images, independent risk-page review, spread-split inspection, and QA-result review. Do not use subagents to start duplicate OCR environments or duplicate model instances.
 
 Keep blind workers from seeing OCR output, another worker’s transcript, or the frozen final text. Have them return page IDs, transcription, differences, and visual evidence only. Keep the main agent as the sole writer of source files, manifest, final text, EPUB, and delivery report.
 
