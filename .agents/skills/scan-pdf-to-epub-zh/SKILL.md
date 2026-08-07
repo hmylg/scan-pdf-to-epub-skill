@@ -1,6 +1,6 @@
 ---
 name: scan-pdf-to-epub-zh
-description: 将扫描版或图片型 PDF 制作成可追溯、可搜索、可调字号的可重排 EPUB，并执行逐页清点、双页拆分、本地双引擎 OCR 候选对照、高清扫描核校、插图保留、导航构建、EPUBCheck 和阅读器实机检查。用于中文用户要求转换扫描 PDF、审计或修复既有转换项目，或设计本地隐私优先的 OCR→EPUB 流程时。普通文字型 PDF、固定版式 EPUB、仅翻译任务或未经授权的版权内容公开发布不触发。
+description: 将扫描版或图片型 PDF 制作成可追溯、可搜索、可调字号的可重排 EPUB，并执行逐页清点、双页拆分、保留证据的 OCR 路由、高清扫描核校、插图保留、导航构建、EPUBCheck 和阅读器实机检查。用于中文用户要求通过本地 OCR 路线或用户已提供的官方 PaddleOCR AI Studio 结果转换扫描 PDF、审计或修复既有转换项目，或设计隐私优先的 OCR→EPUB 流程时。普通文字型 PDF、固定版式 EPUB、仅翻译任务或未经授权的版权内容公开发布不触发。
 ---
 
 # 扫描 PDF 转可重排 EPUB
@@ -19,7 +19,7 @@ description: 将扫描版或图片型 PDF 制作成可追溯、可搜索、可�
 - 不翻译、不润色、不顺语义、不根据上下文补写扫描中没有的文字。
 - 不把 OCR 置信度、模型相似度或语言模型的通顺程度当作字符准确率。
 - 改动原 PDF、上传内容、公开版权页或替用户裁决重要歧义前必须暂停确认。
-- 如平台不是 macOS，要如实说明 Apple Vision 不可用；不能声称完成了同样的双引擎流程。
+- 如平台不是 macOS，要如实说明 Apple Vision 不可用；不能声称完成了路线 A 的本地双引擎流程。
 
 ## 工作流程
 
@@ -56,21 +56,22 @@ description: 将扫描版或图片型 PDF 制作成可追溯、可搜索、可�
 
 不要对所有双页使用固定 50/50 裁切。依据本页暗带、空白带或文字边界估计书脊，并保存每页裁切参数。
 
-### 3. 在本地取得独立 OCR 候选
+### 3. 选择一条 OCR 获取路线并保留证据
 
-所有引擎必须使用同一批图片、分辨率、裁切结果和 page ID。分别保留原始 JSON，并记录文字、置信度、坐标、阅读顺序、版本、模型、选项和图片哈希。
+全文处理前必须选择并记录一条 PaddleOCR 路线：
 
-在 macOS 上，按项目声明使用 Apple Vision，常见设置为 zh-Hans、en-US、ja-JP、accurate 和 language correction。如果系统框架或本地权限不可用，要说明限制并停止，或改用用户明确批准的后端。
+- **路线 A——本地对照：**在 macOS 上使用 Apple Vision，并只启动一个项目管理的本地 PaddleOCR pipeline。所有本地引擎使用同一批图片、分辨率、裁切结果和 page ID；分别保留原始 JSON，并记录文字、置信度、坐标、阅读顺序、包/版本、模型、选项和图片哈希。
+- **路线 B——用户已提供 AI Studio 结果：**如果用户已经提供该来源的官方 PaddleOCR AI Studio `.md` 和 `.json`，直接把它们作为主 OCR 候选使用。记录来源、可取得的导出元数据、文件哈希和完整 PDF 页对应关系。导出结果和页面映射可用时，路线 B 的 OCR 获取条件即已满足：不要为了重现结果而安装或运行本地 PaddleOCR，不要求第二个 OCR 引擎；除非用户明确要求额外对照，否则不得为询问第二引擎而暂停。
 
-当来源是中文扫描版或图片型 PDF 时，优先使用本地 PaddleOCR 作为基线，不能把 Apple Vision 加 Tesseract 当作等价替代。本地路线默认使用 PP-OCRv6 medium 检测与识别（`PP-OCRv6_medium_det` + `PP-OCRv6_medium_rec`）。如果用户已经提前提供了该来源的官方 PaddleOCR AI Studio `.md` 和 `.json` 结果，应记录来源和页面对应关系，并直接把它们作为主 OCR 候选使用；不必强行再次安装或运行本地 PaddleOCR。PaddleOCR-VL、用户提供的在线 OCR 或其他引擎必须按实际来源标注。
+路线 A 按项目声明使用 Apple Vision，常见设置为 zh-Hans、en-US、ja-JP、accurate 和 language correction。处理中文扫描版或图片型 PDF 时，要求 PaddleOCR 3.7 或更高版本，并使用 PP-OCRv6 medium 检测与识别（`PP-OCRv6_medium_det` + `PP-OCRv6_medium_rec`）。不能把 Apple Vision 加 Tesseract 当作等价替代。如果 Apple Vision、所需系统框架或权限不可用，应说明限制，并使用路线 B 或用户明确批准的其他后端。PaddleOCR-VL 或其他引擎必须按实际来源标注。
 
-全文 OCR 前必须建立 `work/ocr/engine-preflight.json`，为每个引擎记录包/版本、模型、语言、设备、选项、输入页数与哈希规则、缓存/下载状态、运行状态、输出路径、失败原因和起止时间。如果本地 PaddleOCR 和用户已提供且获批准的 AI Studio 结果都不可用，必须在全文 OCR 前暂停并报告具体阻塞原因。PaddleOCR 路径为空或缺少原始 JSON，属于本地 preflight 失败；只有在记录了获批准的 AI Studio 路线、`.md`/`.json` 路径、来源和页面对应关系时，才可以不运行本地 PaddleOCR。
+全文处理前必须建立 `work/ocr/engine-preflight.json` 并记录所选路线。为每个可用引擎或外部导出记录来源、适用时的包/版本、已知模型、语言、设备、选项、输入页数与哈希规则、缓存/下载状态、运行状态、输出路径、失败原因和起止时间。如果路线 A 和路线 B 都不可用，必须暂停并报告具体阻塞原因。本地 PaddleOCR 路径为空或缺少原始 JSON，属于路线 A preflight 失败；只有在路线 B 已记录 `.md`/`.json` 路径、来源、哈希和页面对应关系时，才可以接受。
 
-默认 PP-OCRv6 medium 基线不应顺带下载无关流水线：除非基准或用户明确需要，否则关闭文档方向分类、文档矫正和文本行方向分类。每个任务只使用一个项目管理的 PaddleOCR 环境和一个 OCR pipeline 实例，复用模型缓存，不重复下载或初始化副本，并限制 batch/worker 数量，使内存占用可预期。subagent 可以复核页面或盲录样本，但不能各自启动另一套 PaddleOCR runner。
+路线 A 不应顺带下载无关流水线：除非基准或用户明确需要，否则关闭文档方向分类、文档矫正和文本行方向分类。每个任务只使用一个项目管理的 PaddleOCR 环境和一个 OCR pipeline 实例，复用模型缓存，不重复下载或初始化副本，并限制 batch/worker 数量，使内存占用可预期。subagent 可以复核页面或盲录样本，但不能启动另一套 PaddleOCR runner。
 
-全文 OCR 前先做代表性基准集，并让所有引擎使用同一批图片、分辨率、裁切结果和 page ID。样本至少覆盖普通正文、对白密集页、章首、低对比/装订阴影页、中英日数字混排页、版权/书目信息页和插图邻接页。根据本书实际版式和错误模式决定主候选，不要预设某个引擎永远最好。
+路线 A 在全文 OCR 前先做代表性基准集，并让所有本地引擎使用同一批图片、分辨率、裁切结果和 page ID；根据本书实际版式和错误模式决定主候选。路线 B 保持用户提供的 AI Studio 结果为主候选，无需为第二引擎请求批准，直接进入对照扫描件的视觉精校。两条路线的样本都应覆盖普通正文、对白密集页、章首、低对比/装订阴影页、中英日数字混排页、版权/书目信息页和插图邻接页。
 
-对于不敏感的 PDF，用户可以上传到[官方 PaddleOCR AI Studio](https://aistudio.baidu.com/paddleocr)，调用在线旗舰分析，下载生成的 `.md` 和 `.json` 后把路径告诉 Codex。如果这些结果在 OCR 开始前已经提供，可以直接作为本次任务的主 OCR 候选使用，不必强行安装本地 PaddleOCR。仍需记录外部来源和页面对应关系；不要上传私人、机密或未经授权的内容，也不能把在线结果称为本地 PaddleOCR 已运行。
+对于不敏感的 PDF，用户可以上传到[官方 PaddleOCR AI Studio](https://aistudio.baidu.com/paddleocr)，调用在线旗舰分析，下载生成的 `.md` 和 `.json` 后把路径告诉 Codex，并按路线 B 处理。不要上传私人、机密或未经授权的内容，也不能把在线结果称为本地 PaddleOCR 已运行。
 
 ### 4. 用差异路由视觉核校
 

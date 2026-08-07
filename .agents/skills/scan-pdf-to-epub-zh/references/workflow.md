@@ -6,7 +6,7 @@
 
 - [阶段产物](#阶段产物)
 - [前置检查记录](#前置检查记录)
-- [中文扫描书的 PaddleOCR 前置检查](#中文扫描书的-paddleocr-前置检查)
+- [中文扫描书的 PaddleOCR 路线前置检查](#中文扫描书的-paddleocr-路线前置检查)
 - [Manifest 设计](#manifest-设计)
 - [双页拆分](#双页拆分)
 - [OCR 和候选路由](#ocr-和候选路由)
@@ -21,7 +21,7 @@
 | 前置检查 | 来源记录、哈希、页数、平台和用户决定 | 元数据或隐私范围不清 |
 | 页面清点 | 缩略图、单页/双页分类、特殊页清单 | 页面无法安全分类 |
 | Manifest | 稳定 page ID、裁切框、状态和来源 | 某个原页没有去向 |
-| OCR 基准 | 同图像、同裁切的本地引擎原始 JSON | 引擎无法本地运行或结果不可比 |
+| OCR 获取 | 路线 A：同图像本地原始 JSON；路线 B：已映射的 AI Studio 导出与视觉风险样本 | 两条获准路线都不可用 |
 | 全文 OCR | 候选结果缓存和可恢复日志 | 批处理会覆盖原始输出 |
 | 精校 | 冻结的 final-pages、视觉决定和修复日志 | 只凭置信度或通顺度选字 |
 | EPUB 构建 | 可生成源目录、EPUB 和构建日志 | 正文或图片位置仍在变化 |
@@ -40,15 +40,18 @@
 
 不要把私人路径或云服务凭证写入公开报告。
 
-## 中文扫描书的 PaddleOCR 前置检查
+## 中文扫描书的 PaddleOCR 路线前置检查
 
-对于中文扫描版或图片型 PDF，优先使用本地 PaddleOCR 作为基线。本地路线默认使用 `PP-OCRv6_medium_det` 加 `PP-OCRv6_medium_rec`，不能静默用 Apple Vision 或 Tesseract 替代。如果用户在 OCR 开始前已经提供官方 PaddleOCR AI Studio 的 `.md` 和 `.json` 结果，应记录来源和页面对应关系，并直接把它们作为主候选使用；这次任务不必安装本地 PaddleOCR。
+全文处理前必须选择一条路线：
 
-全文 OCR 前建立 `work/ocr/engine-preflight.json`，记录每个引擎的包/版本、模型、语言、设备、选项、输入页数与哈希规则、缓存/下载状态、运行状态、输出路径、失败原因和起止时间。中文任务在本地 PaddleOCR 和用户已提供且获批准的 AI Studio 结果都不可用时，不能进入全文 OCR。缺少本地 PaddleOCR 原始 JSON 只有在已记录获批准的在线路线、`.md`/`.json` 路径、来源和页面对应关系时才可以接受。
+- **路线 A——本地对照：**要求 PaddleOCR 3.7 或更高版本，使用 `PP-OCRv6_medium_det` 加 `PP-OCRv6_medium_rec`，并在 macOS 上与 Apple Vision 对照。不能静默用 Apple Vision 或 Tesseract 替代 PaddleOCR。
+- **路线 B——用户已提供 AI Studio 结果：**用户在处理前已经提供官方 PaddleOCR AI Studio 的 `.md` 和 `.json` 时，记录来源、哈希、可取得的导出元数据和完整页面对应关系，并直接作为主候选使用。导出和映射可用后直接继续，不安装本地 PaddleOCR，不要求第二引擎；除非用户明确要求额外对照，否则也不为询问第二引擎而暂停。
 
-每个任务只使用一个项目管理的 PaddleOCR 环境和一个 pipeline 实例。复用模型缓存，限制 batch/worker 数量，不允许 subagent 或并行分支重复初始化模型。除非基准或用户明确需要，否则关闭文档方向分类、文档矫正和文本行方向分类，让基线保持在 PP-OCRv6 medium det/rec。
+全文处理前建立 `work/ocr/engine-preflight.json` 并记录所选路线。为每个可用引擎或外部导出记录来源、适用时的包/版本、已知模型、语言、设备、选项、输入页数与哈希规则、缓存/下载状态、运行状态、输出路径、失败原因和起止时间。两条路线都不可用时不能继续。缺少本地 PaddleOCR 原始 JSON 只有在路线 B 已记录 `.md`/`.json` 路径、来源、哈希和页面对应关系时才可以接受。
 
-对于不敏感的 PDF，用户可以运行[官方 PaddleOCR AI Studio](https://aistudio.baidu.com/paddleocr)，下载其 `.md` 和 `.json` 后把路径告诉 Codex。如果在 OCR 开始前已经提供，这个获批准的外部结果可以直接作为主候选使用，本次任务不必安装本地 PaddleOCR。仍需记录来源和页面对应关系；绝不能上传私人、机密或未经授权的内容，也不能把这个外部结果称为本地 PaddleOCR 已运行。
+路线 A 每个任务只使用一个项目管理的 PaddleOCR 环境和一个 pipeline 实例。复用模型缓存，限制 batch/worker 数量，不允许 subagent 或并行分支重复初始化模型。除非基准或用户明确需要，否则关闭文档方向分类、文档矫正和文本行方向分类，让基线保持在 PP-OCRv6 medium det/rec。
+
+对于不敏感的 PDF，用户可以运行[官方 PaddleOCR AI Studio](https://aistudio.baidu.com/paddleocr)，下载其 `.md` 和 `.json` 后把路径告诉 Codex，并按路线 B 处理。绝不能上传私人、机密或未经授权的内容，也不能把这个外部结果称为本地 PaddleOCR 已运行。
 
 ## Manifest 设计
 
@@ -60,7 +63,7 @@
 2. classified
 3. extracted
 4. ocr-complete
-5. candidate-compared
+5. candidate-compared；路线 B 没有第二引擎时使用 primary-candidate-recorded
 6. proofed
 7. illustration-ready 或 confirmed-blank
 8. epub-placed
@@ -82,11 +85,13 @@
 
 ## OCR 和候选路由
 
-完成必需的前置检查后，再把同一裁片交给每个本地引擎，记录引擎名称、包/模型版本、选项、图片哈希、运行日期和原始结果路径。引擎升级必须在 manifest 中可见。
+路线 A 完成前置检查后，把同一裁片交给每个本地引擎，记录引擎名称、包/模型版本、选项、图片哈希、运行日期和原始结果路径。引擎升级必须在 manifest 中可见。
 
-基准集应覆盖版式风险，而不只是容易识别的正文。除非有独立有效金标准，否则基准集只能用于路由和回归，不能称为正式准确率认证。
+路线 B 保持用户提供的 `.md` 和 `.json` 不变，将它们映射到源页，并记录未知的在线预处理。不要伪造同图像可比性，不要只为满足“双引擎”勾选项而运行本地引擎，也不要为了寻找第二引擎而延迟视觉精校。
 
-候选比较后：
+风险样本应覆盖版式问题，而不只是容易识别的正文。路线 A 用于候选路由和回归；路线 B 用于对主候选进行高清视觉精校。除非有独立有效金标准，否则不能称为正式准确率认证。
+
+候选比较后，或路线 B 风险抽检后：
 
 - 把漏行或多行页面列入队列。
 - 把左右页反转、列顺序错误页面列入队列。

@@ -2,7 +2,7 @@
 
 [English](#english) · [中文](#中文)
 
-This repository provides two bilingual Codex Agent Skills for turning scanned, image-based books into searchable and resizable EPUB projects with traceable page coverage, local OCR candidates, visual proofreading, image preservation, and reader QA.
+This repository provides two parallel Codex Agent Skills—one English and one Chinese—for turning scanned, image-based books into searchable and resizable EPUB projects with traceable page coverage, evidence-preserving OCR routing, visual proofreading, image preservation, and reader QA.
 
 ## English
 
@@ -11,7 +11,7 @@ This repository provides two bilingual Codex Agent Skills for turning scanned, i
 - [English skill](.agents/skills/scan-pdf-to-epub/)
 - [中文 skill](.agents/skills/scan-pdf-to-epub-zh/)
 
-The English skill is the default global entry point. The Chinese skill is a parallel Chinese-language entry point with the same workflow and safeguards.
+The English skill is intended for international users. The Chinese skill is a parallel Chinese-language entry point with the same workflow and safeguards.
 
 ### Use cases
 
@@ -31,9 +31,9 @@ Choose a model according to the current quota, speed, and quality requirements. 
 
 ### PaddleOCR baseline and optional online analysis
 
-PaddleOCR is a first-class and important engine in this skill, not an optional afterthought. For Chinese scan tasks, the skill installs and uses local PP-OCRv6 medium detection and recognition (`PP-OCRv6_medium_det` + `PP-OCRv6_medium_rec`) by default. If the user has already supplied official PaddleOCR AI Studio `.md` and `.json` results for the source, Codex may use them directly as the primary OCR candidate and skip local installation for that task. The [current official model table](https://github.com/PaddlePaddle/PaddleOCR/blob/main/docs/version3.x/pipeline_usage/OCR.en.md) lists 59.4 MB plus 73.3 MB for the two local weights, about 0.13 GB combined; the reference Mac's current model cache is about 133 MB. Reserve about 1 GB of disk for the Python environment, runtime files, and cache. Runtime RAM is separate and varies with image size, batch size, and process count, so this Skill uses one OCR pipeline instance and forbids duplicate model loads.
+PaddleOCR is a first-class and important engine in this skill, not an optional afterthought. For Chinese scan tasks, the local route requires PaddleOCR 3.7 or newer and uses PP-OCRv6 medium detection and recognition (`PP-OCRv6_medium_det` + `PP-OCRv6_medium_rec`) in one project-managed environment and one pipeline instance. If the user has already supplied official PaddleOCR AI Studio `.md` and `.json` results for the source, Codex uses them directly as the primary OCR candidate and does not install or run local PaddleOCR merely to duplicate them. The [current official model table](https://github.com/PaddlePaddle/PaddleOCR/blob/main/docs/version3.x/pipeline_usage/OCR.en.md) lists 59.4 MB plus 73.3 MB for the two local weights, about 0.13 GB combined; the reference Mac's current model cache is about 133 MB. Reserve about 1 GB of disk for the Python environment, runtime files, and cache. Runtime RAM is separate and varies with image size, batch size, and process count.
 
-For non-sensitive PDFs only, you may upload the file to the [official PaddleOCR AI Studio](https://aistudio.baidu.com/paddleocr), use its official online flagship analysis, download the resulting `.md` and `.json`, and tell Codex their paths. If you provide those results before OCR begins, Codex may use them directly as the primary candidate, so local installation is not required for that task. Record the external provenance and page mapping. Do not upload private, confidential, or unauthorized material, and do not describe an online result as a local PaddleOCR run.
+For non-sensitive PDFs only, you may upload the file to the [official PaddleOCR AI Studio](https://aistudio.baidu.com/paddleocr), use its official online flagship analysis, download the resulting `.md` and `.json`, and tell Codex their paths. If you provide those results before processing begins, Codex uses them directly as the primary candidate; a second OCR engine is optional, and local installation is not required for that task. Record external provenance, file hashes, and page mapping. Do not upload private, confidential, or unauthorized material, and do not describe an online result as a local PaddleOCR run.
 
 ### Parallel work with subagents
 
@@ -64,7 +64,7 @@ The skills are macOS-first when Apple Vision is requested. The author's referenc
 
 ### License
 
-The original workflow instructions are licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). See [LICENSE.txt](LICENSE.txt).
+The original workflow instructions are licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). See the canonical text in [LICENSE.txt](LICENSE.txt). Attribution should credit this repository and link to the original source.
 
 ### Status
 
@@ -72,7 +72,7 @@ This is a first public release extracted from a real local workflow. The project
 
 ## 中文
 
-本仓库提供两个双语 Codex Agent Skill，用于把扫描版、图片型书籍制作成可搜索、可调字号的 EPUB，并保留逐页对应关系、本地 OCR 候选、高清扫描核校、插图和特殊页面，以及阅读器验收证据。
+本仓库提供英文和中文两个平行版本的 Codex Agent Skill，用于把扫描版、图片型书籍制作成可搜索、可调字号的 EPUB，并保留逐页对应关系、可追溯 OCR 路由、高清扫描核校、插图和特殊页面，以及阅读器验收证据。
 
 ### 包含内容
 
@@ -99,9 +99,9 @@ This is a first public release extracted from a real local workflow. The project
 
 ### PaddleOCR 基线与可选在线分析
 
-PaddleOCR 是本 Skill 非常重要的一等引擎，不是可有可无的补充。处理中文扫描 PDF 时，本 Skill 默认在本地安装并使用 PP-OCRv6 medium 检测与识别（`PP-OCRv6_medium_det` + `PP-OCRv6_medium_rec`）。如果用户已经提前提供该来源的官方 PaddleOCR AI Studio `.md` 和 `.json` 结果，Codex 可以直接把它们作为主 OCR 候选使用，本次任务不必安装本地 PaddleOCR。[当前官方模型表](https://github.com/PaddlePaddle/PaddleOCR/blob/main/docs/version3.x/pipeline_usage/OCR.en.md)列出的两个本地模型文件分别约为 59.4 MB 和 73.3 MB，合计约 0.13 GB；参考 Mac 当前的模型缓存约为 133 MB。建议为 Python 环境、运行文件和缓存预留约 1 GB 磁盘空间。运行时内存另行计算，会受图片尺寸、batch 大小和进程数影响，因此本 Skill 只使用一个 OCR pipeline 实例，禁止重复加载模型。
+PaddleOCR 是本 Skill 非常重要的一等引擎，不是可有可无的补充。处理中文扫描 PDF 时，本地路线要求 PaddleOCR 3.7 或更高版本，并在一个项目管理的环境和一个 pipeline 实例中使用 PP-OCRv6 medium 检测与识别（`PP-OCRv6_medium_det` + `PP-OCRv6_medium_rec`）。如果用户已经提前提供该来源的官方 PaddleOCR AI Studio `.md` 和 `.json` 结果，Codex 直接把它们作为主 OCR 候选使用，不会仅为重复结果而安装或运行本地 PaddleOCR。[当前官方模型表](https://github.com/PaddlePaddle/PaddleOCR/blob/main/docs/version3.x/pipeline_usage/OCR.en.md)列出的两个本地模型文件分别约为 59.4 MB 和 73.3 MB，合计约 0.13 GB；参考 Mac 当前的模型缓存约为 133 MB。建议为 Python 环境、运行文件和缓存预留约 1 GB 磁盘空间。运行时内存另行计算，会受图片尺寸、batch 大小和进程数影响。
 
-对于不敏感的 PDF，可以上传到[官方 PaddleOCR AI Studio](https://aistudio.baidu.com/paddleocr)，调用官方在线旗舰分析，下载生成的 `.md` 和 `.json` 后把路径告诉 Codex。如果在 OCR 开始前已经提供这些结果，Codex 可以直接把它们作为本次任务的主 OCR 候选使用，因此不必强行安装本地 PaddleOCR。仍需记录外部来源和页面对应关系。不要上传私人、机密或未经授权的内容，也不要把在线结果描述成本地 PaddleOCR 运行结果。
+对于不敏感的 PDF，可以上传到[官方 PaddleOCR AI Studio](https://aistudio.baidu.com/paddleocr)，调用官方在线旗舰分析，下载生成的 `.md` 和 `.json` 后把路径告诉 Codex。如果在处理开始前已经提供这些结果，Codex 会直接把它们作为本次任务的主 OCR 候选；第二个 OCR 引擎是可选项，本次任务不需要本地安装。仍需记录外部来源、文件哈希和页面对应关系。不要上传私人、机密或未经授权的内容，也不要把在线结果描述成本地 PaddleOCR 运行结果。
 
 ### 使用 subagent 加速
 
@@ -132,7 +132,7 @@ PaddleOCR 是本 Skill 非常重要的一等引擎，不是可有可无的补充
 
 ### 许可证
 
-原创工作流说明采用 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) 许可，详见 [LICENSE.txt](LICENSE.txt)。
+原创工作流说明采用 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) 许可，规范全文见 [LICENSE.txt](LICENSE.txt)。署名时请注明本仓库并链接至原始来源。
 
 ### 项目状态
 

@@ -1,6 +1,6 @@
 ---
 name: scan-pdf-to-epub
-description: Convert scanned PDFs into traceable, reflowable EPUB projects with page inventory, per-spread splitting, local OCR candidate comparison, visual proofreading, image preservation, navigation construction, EPUBCheck, and reader smoke tests. Use when Codex needs to turn a scanned or image-based PDF into a searchable, resizable EPUB; audit or repair an existing scan-to-EPUB project; or design a privacy-preserving local workflow for Chinese, Japanese, English, or mixed-language books. Do not trigger for ordinary text PDFs, fixed-layout EPUBs, translation-only tasks, or publishing copyrighted scans.
+description: Convert scanned PDFs into traceable, reflowable EPUB projects with page inventory, per-spread splitting, evidence-preserving OCR routing, visual proofreading, image preservation, navigation construction, EPUBCheck, and reader smoke tests. Use when Codex needs to turn a scanned or image-based PDF into a searchable, resizable EPUB; use either a local OCR route or user-supplied official PaddleOCR AI Studio exports; audit or repair an existing scan-to-EPUB project; or design a privacy-preserving workflow for Chinese, Japanese, English, or mixed-language books. Do not trigger for ordinary text PDFs, fixed-layout EPUBs, translation-only tasks, or publishing copyrighted scans.
 ---
 
 # Scan PDF to Reflowable EPUB
@@ -19,7 +19,7 @@ Turn a scanned or image-based PDF into a searchable, resizable EPUB while keepin
 - Do not translate, paraphrase, smooth, restore, or invent text that is not supported by the scan.
 - Do not treat OCR confidence, model similarity, or language-model fluency as character accuracy.
 - Pause before changing the source, uploading content, exposing copyrighted pages, or resolving an ambiguity that requires the owner’s decision.
-- State platform limitations honestly. Apple Vision is a local macOS backend; do not claim that a non-macOS run completed the same dual-engine workflow.
+- State platform limitations honestly. Apple Vision is a local macOS backend; do not claim that a non-macOS run completed the Route A dual-engine workflow.
 
 ## Workflow
 
@@ -56,21 +56,22 @@ Inspect contact sheets or page previews. Classify covers, spines, title pages, a
 
 Never use a fixed 50/50 split for every spread. Estimate the gutter per page from the dark band, blank band, or text boundary, and retain the crop parameters.
 
-### 3. Acquire independent OCR candidates locally
+### 3. Choose one OCR acquisition route and preserve evidence
 
-Use the same page image, resolution, crop, and page ID for every engine. Preserve each engine’s raw JSON with text, confidence, bounding boxes, reading order, version, model, options, and image hash.
+Choose and record exactly one PaddleOCR route before full processing:
 
-On macOS, use Apple Vision with the project’s declared languages and options, commonly zh-Hans, en-US, ja-JP, accurate recognition, and language correction. If the required local framework or permission is unavailable, report the limitation and stop or use an explicitly approved fallback.
+- **Route A — local comparison:** On macOS, compare Apple Vision with one project-managed local PaddleOCR pipeline. Use the same page image, resolution, crop, and page ID for every locally run engine. Preserve raw JSON with text, confidence, bounding boxes, reading order, package/version, model, options, and image hash.
+- **Route B — user-supplied AI Studio:** If the user already supplied official PaddleOCR AI Studio `.md` and `.json` exports for this source, use them directly as the primary OCR candidate. Record provenance, export metadata when available, file hashes, and complete PDF-page mapping. Do not install or run local PaddleOCR merely to recreate those results. Route B is complete once the exports and page mapping are usable: do not require a second OCR engine and do not pause to ask for one unless the user explicitly requests an additional comparison.
 
-For a Chinese scanned or image-based PDF, prefer local PaddleOCR as the baseline and do not treat Apple Vision plus Tesseract as an equivalent substitute. Use PP-OCRv6 medium detection and recognition (`PP-OCRv6_medium_det` + `PP-OCRv6_medium_rec`) on the local route. If the user has already provided official PaddleOCR AI Studio `.md` and `.json` results for this source, record their provenance and page mapping, then use those results directly as the primary OCR candidate; do not force a second local installation or run. PaddleOCR-VL, user-supplied online OCR, or another engine must be named by its actual source.
+On Route A, use Apple Vision with the project’s declared languages and options, commonly zh-Hans, en-US, ja-JP, accurate recognition, and language correction. For a Chinese scanned or image-based PDF, require PaddleOCR 3.7 or newer and use PP-OCRv6 medium detection and recognition (`PP-OCRv6_medium_det` + `PP-OCRv6_medium_rec`). Do not treat Apple Vision plus Tesseract as an equivalent substitute. If Apple Vision, the required local framework, or permission is unavailable, report the limitation and use Route B or another explicitly approved fallback. PaddleOCR-VL or another engine must be named by its actual source.
 
-Before full-book OCR, create `work/ocr/engine-preflight.json` and record for every engine: package/version, model, language, device, options, input count and hash policy, cache/download status, run status, output path, failure reason, and timestamps. If neither local PaddleOCR nor an approved user-provided AI Studio result is available, pause before full OCR and report the concrete blocker. Empty PaddleOCR paths or missing raw JSON are a failed local preflight; they are acceptable only when the approved AI Studio route is recorded with its `.md`/`.json` paths, provenance, and page mapping.
+Before full processing, create `work/ocr/engine-preflight.json` and record the selected route. For every available engine or external export, record source, package/version when applicable, model when known, language, device, options, input count and hash policy, cache/download status, run status, output path, failure reason, and timestamps. If neither Route A nor Route B is available, pause and report the concrete blocker. Empty local PaddleOCR paths or missing raw JSON are a failed Route A preflight; they are acceptable only when Route B records its `.md`/`.json` paths, provenance, hashes, and page mapping.
 
-For the default PP-OCRv6 medium baseline, avoid downloading unrelated pipelines unless required: keep document-orientation classification, document unwarping, and text-line orientation disabled unless the benchmark or user requires them. Use one project-managed PaddleOCR environment and one OCR pipeline instance per task; reuse its model cache, do not download or initialize duplicate copies, and keep batch/worker counts bounded so memory use remains predictable. Subagents may review pages or transcribe blind samples, but must not each launch another PaddleOCR runner.
+On Route A, avoid downloading unrelated pipelines: keep document-orientation classification, document unwarping, and text-line orientation disabled unless the benchmark or user requires them. Use one project-managed PaddleOCR environment and one OCR pipeline instance per task; reuse its model cache, do not download or initialize duplicate copies, and keep batch/worker counts bounded so memory use remains predictable. Subagents may review pages or transcribe blind samples, but must not launch another PaddleOCR runner.
 
-Run a representative benchmark before the full book, using the same images, resolution, crops, and page IDs across engines. Include ordinary prose, dialogue, chapter headings, low-contrast or gutter pages, mixed Chinese/Japanese/English/numeric pages, copyright/metadata pages, and illustration-adjacent pages. Select a primary candidate only after comparing actual layout and error patterns for this book; never hard-code a universal winner.
+On Route A, run a representative benchmark before the full book, using the same images, resolution, crops, and page IDs across engines. Select a primary candidate only after comparing actual layout and error patterns for this book. On Route B, keep the supplied AI Studio result as the primary candidate and proceed directly to scan-based visual proofing without requesting approval for a second engine. In either route, cover ordinary prose, dialogue, chapter headings, low-contrast or gutter pages, mixed Chinese/Japanese/English/numeric pages, copyright/metadata pages, and illustration-adjacent pages.
 
-For a non-sensitive PDF, the user may upload it to the [official PaddleOCR AI Studio](https://aistudio.baidu.com/paddleocr), run its online flagship analysis, download the resulting `.md` and `.json`, and provide their paths to Codex. If those results are supplied before OCR, they may be used directly as the primary candidate and local PaddleOCR installation can be skipped for that task. Record the external provenance and page mapping, do not upload private, confidential, or unauthorized material, and do not call an online result a local PaddleOCR run.
+For a non-sensitive PDF, the user may upload it to the [official PaddleOCR AI Studio](https://aistudio.baidu.com/paddleocr), run its online flagship analysis, download the resulting `.md` and `.json`, and provide their paths to Codex. Treat this as Route B. Do not upload private, confidential, or unauthorized material, and do not call an online result a local PaddleOCR run.
 
 ### 4. Route differences to visual proofing
 

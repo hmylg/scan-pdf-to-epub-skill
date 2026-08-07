@@ -10,9 +10,9 @@ Attach evidence to the project QA report. A checkbox without a path, command out
 - [ ] Private, licensed, and publication scope recorded.
 - [ ] Host OS and architecture recorded; Apple Vision availability checked when required.
 - [ ] OCR engines, packages, models, options and offline status recorded.
-- [ ] For a Chinese scan, either local PaddleOCR preflight passed with PP-OCRv6 medium det/rec, or an approved user-provided AI Studio `.md`/`.json` route is mapped to the source pages.
+- [ ] The selected OCR route is explicit: Route A uses PaddleOCR 3.7+ with PP-OCRv6 medium det/rec; Route B maps approved user-provided AI Studio `.md`/`.json` exports to the source pages.
 - [ ] `work/ocr/engine-preflight.json` records cache, download, run status and failure reasons.
-- [ ] Only one PaddleOCR pipeline instance ran for the task; the cache was reused and subagents did not start another OCR runner.
+- [ ] If Route A ran, only one PaddleOCR pipeline instance was used, its cache was reused, and subagents did not start another OCR runner; Route B did not install or run local PaddleOCR merely for duplication.
 - [ ] Existing project assets and prior QA audited before reprocessing.
 
 ## Inventory and images
@@ -27,11 +27,12 @@ Attach evidence to the project QA report. A checkbox without a path, command out
 
 ## OCR and proofing
 
-- [ ] All engines received the same page image and crop.
+- [ ] All locally run engines received the same page image and crop; Route B records external input mapping and any unknown preprocessing instead of claiming same-image comparability.
 - [ ] Raw JSON was saved for every completed engine/page pair.
 - [ ] Candidate text preserves page IDs and reading order.
 - [ ] Any AI Studio result is recorded as an external online source with its `.md`/`.json` provenance; if selected, its direct use as the primary candidate is explicit, never mislabeled as local OCR.
-- [ ] Difference routing covers missing lines, duplicates, order errors and punctuation/number disagreements.
+- [ ] Route B proceeded without requiring or requesting a second OCR engine unless the user explicitly asked for an additional comparison.
+- [ ] Route A difference routing, or Route B visual risk sampling, covers missing lines, duplicates, order errors and punctuation/number risks.
 - [ ] Risk pages were opened against the high-resolution scan.
 - [ ] Names, titles, mixed scripts, quotations, ellipses, dashes, numbers, URLs and ISBNs were checked.
 - [ ] Cross-page paragraphs, dialogue, gutter edges and illustration neighbors were checked.

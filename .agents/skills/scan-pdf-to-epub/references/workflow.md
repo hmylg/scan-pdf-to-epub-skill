@@ -6,7 +6,7 @@ Use this reference when executing a new conversion or recovering an interrupted 
 
 - [Phase outputs](#phase-outputs)
 - [Preflight record](#preflight-record)
-- [Mandatory PaddleOCR preflight for Chinese scans](#mandatory-paddleocr-preflight-for-chinese-scans)
+- [PaddleOCR route preflight for Chinese scans](#paddleocr-route-preflight-for-chinese-scans)
 - [Manifest design](#manifest-design)
 - [Spread splitting](#spread-splitting)
 - [OCR and candidate routing](#ocr-and-candidate-routing)
@@ -21,7 +21,7 @@ Use this reference when executing a new conversion or recovering an interrupted 
 | Preflight | Source record, hash, page count, platform and user decisions | Metadata or privacy scope is unclear |
 | Inventory | Contact sheet, spread/single classification, special-page list | A page cannot be classified safely |
 | Manifest | Stable page IDs, crop boxes, states and provenance | Any source page has no planned disposition |
-| OCR benchmark | Same-image raw JSON from the selected local engines | Engines cannot run locally or results are not comparable |
+| OCR acquisition | Route A: same-image local raw JSON; Route B: mapped AI Studio exports and a visual risk sample | Neither approved route is available |
 | Full OCR | Cached candidates and resumable logs | A batch would overwrite prior raw output |
 | Proofing | Frozen final-pages, visual decisions and repair log | Text is chosen only by confidence or fluency |
 | EPUB build | Generated source tree, EPUB package and build log | Final pages or image placement are still changing |
@@ -40,15 +40,18 @@ Keep a machine-readable source record containing:
 
 Never place a private source path or a cloud credential in a public report.
 
-## Mandatory PaddleOCR preflight for Chinese scans
+## PaddleOCR route preflight for Chinese scans
 
-For a Chinese scanned or image-based PDF, prefer local PaddleOCR as the baseline. Use `PP-OCRv6_medium_det` plus `PP-OCRv6_medium_rec` on the local route; do not silently replace it with Apple Vision or Tesseract. If the user has supplied official PaddleOCR AI Studio `.md` and `.json` results before OCR begins, record their provenance and page mapping and use them directly as the primary candidate; local PaddleOCR need not be installed for that task.
+Choose exactly one route before full processing:
 
-Before full OCR, create `work/ocr/engine-preflight.json` and record each engine's package/version, model, language, device, options, input count and hash policy, cache/download status, run status, output path, failure reason, and timestamps. A Chinese task is not ready for full OCR when neither local PaddleOCR nor an approved user-provided AI Studio result is available. Missing local PaddleOCR raw JSON is acceptable only when the approved online route has recorded `.md`/`.json` paths, provenance, and page mapping.
+- **Route A — local comparison:** Require PaddleOCR 3.7 or newer and use `PP-OCRv6_medium_det` plus `PP-OCRv6_medium_rec`. Compare it with Apple Vision on macOS. Do not silently replace PaddleOCR with Apple Vision or Tesseract.
+- **Route B — user-supplied AI Studio:** When the user supplied official PaddleOCR AI Studio `.md` and `.json` exports before processing, record their provenance, hashes, export metadata when available, and complete page mapping. Use them directly as the primary candidate. Once the exports and mapping are usable, proceed without installing local PaddleOCR, requiring a second engine, or pausing to ask for one unless the user explicitly requests an additional comparison.
 
-Use one project-managed PaddleOCR environment and one pipeline instance per task. Reuse the model cache, keep batch/worker counts bounded, and do not let subagents or parallel branches initialize duplicate model copies. Unless a benchmark or user requires them, disable document orientation classification, document unwarping, and text-line orientation so the baseline stays on PP-OCRv6 medium det/rec.
+Before full processing, create `work/ocr/engine-preflight.json` and record the selected route. For every available engine or external export, record source, package/version when applicable, model when known, language, device, options, input count and hash policy, cache/download status, run status, output path, failure reason, and timestamps. A Chinese task is not ready when neither route is available. Missing local PaddleOCR raw JSON is acceptable only on Route B with recorded `.md`/`.json` paths, provenance, hashes, and page mapping.
 
-For non-sensitive PDFs, the user may run the [official PaddleOCR AI Studio](https://aistudio.baidu.com/paddleocr), download its `.md` and `.json`, and provide the paths to Codex. When supplied before OCR, this approved external result may be used directly as the primary candidate, so local installation can be skipped for that task. Record provenance and page mapping; never upload private, confidential, or unauthorized material, and never label this external result as a local PaddleOCR run.
+On Route A, use one project-managed PaddleOCR environment and one pipeline instance per task. Reuse the model cache, keep batch/worker counts bounded, and do not let subagents or parallel branches initialize duplicate model copies. Unless a benchmark or user requires them, disable document orientation classification, document unwarping, and text-line orientation so the baseline stays on PP-OCRv6 medium det/rec.
+
+For non-sensitive PDFs, the user may run the [official PaddleOCR AI Studio](https://aistudio.baidu.com/paddleocr), download its `.md` and `.json`, and provide the paths to Codex for Route B. Never upload private, confidential, or unauthorized material, and never label this external result as a local PaddleOCR run.
 
 ## Manifest design
 
@@ -60,7 +63,7 @@ Recommended state transitions:
 2. classified
 3. extracted
 4. ocr-complete
-5. candidate-compared
+5. candidate-compared, or primary-candidate-recorded when Route B has no second engine
 6. proofed
 7. illustration-ready or confirmed-blank
 8. epub-placed
@@ -82,11 +85,13 @@ Re-run OCR only for pages whose crop or image hash changed. Keep prior candidate
 
 ## OCR and candidate routing
 
-Run the same crop through each local engine after the required preflight. Record engine name, package/model version, options, image hash, runtime date, and raw result path. Make engine upgrades visible in the manifest.
+On Route A, run the same crop through each local engine after preflight. Record engine name, package/model version, options, image hash, runtime date, and raw result path. Make engine upgrades visible in the manifest.
 
-Use a benchmark set that covers layout risk, not just easy prose. The benchmark is for routing and regression; it is not a formal accuracy certificate unless an independent valid gold standard exists.
+On Route B, preserve the supplied `.md` and `.json` unchanged, map them to source pages, and record any unknown online preprocessing. Do not manufacture same-image comparability, run a local engine solely to satisfy a dual-engine checkbox, or delay visual proofing to seek a second engine.
 
-After candidate comparison:
+Use a risk set that covers layout risk, not just easy prose. On Route A it supports candidate routing and regression. On Route B it drives high-resolution visual proofing of the supplied primary candidate. It is not a formal accuracy certificate unless an independent valid gold standard exists.
+
+After candidate comparison, or after Route B risk sampling:
 
 - Queue pages with missing or extra lines.
 - Queue pages with reversed columns or spread order.
