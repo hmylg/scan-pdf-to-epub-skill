@@ -10,6 +10,9 @@ Attach evidence to the project QA report. A checkbox without a path, command out
 - [ ] Private, licensed, and publication scope recorded.
 - [ ] Host OS and architecture recorded; Apple Vision availability checked when required.
 - [ ] OCR engines, packages, models, options and offline status recorded.
+- [ ] For a Chinese scan, either local PaddleOCR preflight passed with PP-OCRv6 medium det/rec, or an approved user-provided AI Studio `.md`/`.json` route is mapped to the source pages.
+- [ ] `work/ocr/engine-preflight.json` records cache, download, run status and failure reasons.
+- [ ] Only one PaddleOCR pipeline instance ran for the task; the cache was reused and subagents did not start another OCR runner.
 - [ ] Existing project assets and prior QA audited before reprocessing.
 
 ## Inventory and images
@@ -27,6 +30,7 @@ Attach evidence to the project QA report. A checkbox without a path, command out
 - [ ] All engines received the same page image and crop.
 - [ ] Raw JSON was saved for every completed engine/page pair.
 - [ ] Candidate text preserves page IDs and reading order.
+- [ ] Any AI Studio result is recorded as an external online source with its `.md`/`.json` provenance; if selected, its direct use as the primary candidate is explicit, never mislabeled as local OCR.
 - [ ] Difference routing covers missing lines, duplicates, order errors and punctuation/number disagreements.
 - [ ] Risk pages were opened against the high-resolution scan.
 - [ ] Names, titles, mixed scripts, quotations, ellipses, dashes, numbers, URLs and ISBNs were checked.
@@ -73,4 +77,3 @@ Attach evidence to the project QA report. A checkbox without a path, command out
 - [ ] Source and final EPUB hashes are recorded.
 - [ ] Raw OCR, candidates, final pages and repair log remain traceable.
 - [ ] No private or unlicensed book content is in the public repository.
-
